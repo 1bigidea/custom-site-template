@@ -29,7 +29,43 @@ fi
 if [[ ! -f "${VVV_PATH_TO_SITE}/public_html/wp-config.php" ]]; then
   echo "Configuring WordPress Stable..."
   noroot wp core config --dbname="${DB_NAME}" --dbuser=wp --dbpass=wp --quiet --extra-php <<PHP
-define( 'WP_DEBUG', true );
+	@ini_set('display_errors',0);
+	  define('WP_DEBUG',         true);  // Turn debugging ON
+	  define('WP_DEBUG_LOG',     true);  // Turn logging to wp-content/debug.log ON
+	define( 'SCRIPT_DEBUG', true );
+	define( 'SAVEQUERIES', true );
+
+	if ( isset($_GET['debug']) && $_GET['debug'] == 'oops') {
+
+	  define('WP_DEBUG_DISPLAY', true);
+
+	} else {
+
+	  define('WP_DEBUG_DISPLAY', false);  // Turn forced display OFF
+
+	}
+	/**
+	 * Handling fatal error
+	 *
+	 * @return void
+	 */
+	function fatalErrorHandler()
+	{
+		# Getting last error
+		$error = error_get_last();
+	//	It return an associative array describing the last error with keys "type", "message", "file" and "line" about the last error that occurred.
+
+		# Checking if last error is a fatal error
+		if(($error['type'] === E_ERROR) || ($error['type'] === E_USER_ERROR))
+		{
+			 # Here we handle the error, displaying HTML, logging, ...
+			 echo 'Sorry, a serious error ('.$error['message'].') has occured on '.$error['line'].' in ' . $error['file'];
+		}
+	}
+
+	# Registering shutdown function
+	register_shutdown_function('fatalErrorHandler');
+
 PHP
 fi
 
